@@ -1,0 +1,6 @@
+/client_secret.json
+/*.csv
+/*.xlsx
+/__pycache__
+/inspections
+/token.pickle

@@ -8,4 +8,4 @@ Files:
 0: Gables Inspection Report (Responses) (1JpqZLRSrwGBhLc9SytS-ADwPvQAegdZ9DDpDk4ZWlL0)
 Item number: 0
 ```
-1. All rows will be created as separate txt files.
+All rows will be created as separate txt files. Use the PDF option to generate PDFs.

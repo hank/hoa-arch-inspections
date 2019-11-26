@@ -5,7 +5,7 @@ import csv
 
 def parse_homeowners(csv_file):
     with open(csv_file, 'r') as f:
-        reader = csv.DictReader(f, delimiter="\t")
+        reader = csv.DictReader(f)
         return [x for x in reader]
 
 if __name__ == "__main__":
