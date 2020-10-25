@@ -125,7 +125,7 @@ def main(homeowners_fpath, outdir, fmat="TXT"):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("homeowners", help="TSV file containing homeowners information. Must be TAB delimited and the first row needs the column names.")
+    parser.add_argument("homeowners", help="CSV file containing homeowners information. First row needs the column names.")
     parser.add_argument("--outdir", help="Output directory. Files will be overwritten if existing", default="inspections")
     parser.add_argument("--pdf", help="Make PDFs instead of TXT", action="store_true")
     args = parser.parse_args()
