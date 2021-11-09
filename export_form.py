@@ -59,30 +59,40 @@ def main(homeowners_fpath, outdir, fmat="TXT"):
     credentials = get_credentials()
     service = discovery.build('drive', 'v3', credentials=credentials)
 
-    results = service.files().list(
-        pageSize=10,fields="nextPageToken, files(id, name, mimeType)").execute()
-    items = results.get('files', [])
-    if not items:
-        print('No files found.')
+    if not os.path.isfile('out.csv'):
+
+        try:
+            results = service.files().list(
+                pageSize=10,fields="nextPageToken, files(id, name, mimeType)").execute()
+        except google.auth.exceptions.RefreshError:
+            print("Token expired, getting it again")
+            os.unlink('token.pickle')
+            credentials = get_credentials()
+            results = service.files().list(
+                pageSize=10,fields="nextPageToken, files(id, name, mimeType)").execute()
+        items = results.get('files', [])
+        if not items:
+            print('No files found.')
+        else:
+            print('Files:')
+            i = 0
+            for item in items:
+                print('{0}: {1} ({2})'.format(i, item['name'], item['id']))
+                i += 1
+        num = int(input("Item number: ").strip())
+        results = service.files().export(fileId=items[num]['id'], mimeType='text/csv').execute()
+        with open("out.csv", "wb") as f:
+            f.write(results)
     else:
-        print('Files:')
-        i = 0
-        for item in items:
-            print('{0}: {1} ({2})'.format(i, item['name'], item['id']))
-            i += 1
-    num = int(input("Item number: ").strip())
-    results = service.files().export(fileId=items[num]['id'], mimeType='text/csv').execute()
-    with open("out.csv", "wb") as f:
-        f.write(results)
+        print("Using existing out.csv. Delete to refresh from Google Drive")
     # print(results)
     import csv
     # import io
     # csvIn = io.StringIO(str(results), newline='')
-    with open("out.csv", "r") as f:
+    with open("out.csv", "r", encoding="utf-8") as f:
         reader = csv.reader(f)
         reader = list(reader)
     labels = reader[0]
-    # print(labels)
 
     with open("letter_template.txt", "r") as template:
         letter_template = template.read()
@@ -96,7 +106,16 @@ def main(homeowners_fpath, outdir, fmat="TXT"):
     addresses = {x['Street Address'].strip(): x['Last Name'] for x in homeowners}
     for row in reader[1:]:
         # Attempt to find address in homeowners
-        address = row[labels.index('Inspection Address')].strip().title()
+        house_number = row[labels.index('House Number')].strip()
+        street = row[labels.index('Street')].strip()
+        if "Latchlift" in street or "Graf" in street or "Jud" in street:
+            street += " Court"
+        elif "Summer" in street:
+            street += " Terrace"
+        elif "Bonnie" in street:
+            street += " Lane"
+        street = street.replace("Grafton's", "Graftons")
+        address = f"{house_number} {street}"
         if address not in addresses:
             raise RuntimeError("ERROR, couldn't find {} in addresses".format(address))
         lastname = addresses[address].strip()
